@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Proto KBS-597 · Banking · Supprimer un compte</title>
+    <title>Proto KBS-597 / KBS-589 · Banking</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -187,6 +187,7 @@
 
       .tabs {
         display: flex;
+        flex-wrap: wrap;
         gap: 0.25rem;
         border-bottom: 1px solid var(--neutral-300);
       }
@@ -293,6 +294,7 @@
       .danger-btn {
         background: var(--red-600);
         color: var(--neutral-0);
+        align-self: flex-start;
       }
 
       .danger-btn:hover:not(:disabled) {
@@ -421,6 +423,12 @@
         color: var(--neutral-800);
       }
 
+      .confirm-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
       [hidden] {
         display: none !important;
       }
@@ -429,8 +437,8 @@
   <body>
     <div class="banner">
       <div>
-        <p class="body-sm-strong">Proto KBS-597 · Banking · onglet Supprimer un compte</p>
-        <p class="body-xs-base hint">Nav CX actuelle. Soft-delete. Pas de login. Données fictives.</p>
+        <p class="body-sm-strong">Proto KBS-597 + KBS-589 · Banking</p>
+        <p class="body-xs-base hint">Compte : soft-delete. Connexion : hard-delete, taper SUPPRIMER. Pas de login.</p>
       </div>
       <div class="banner-actions">
         <label class="toggle body-xs-strong">
@@ -510,7 +518,8 @@
           <button class="tab body-sm-base" data-tab="connections" type="button">Recherche de connexions</button>
           <button class="tab body-sm-base" data-tab="inspect" type="button">Inspecter une connexion Bridge</button>
           <button class="tab body-sm-base" data-tab="iban" type="button">Vérification IBAN</button>
-          <button class="tab body-sm-strong is-active" data-tab="delete" type="button">Supprimer un compte</button>
+          <button class="tab body-sm-base" data-tab="delete" type="button">Supprimer un compte</button>
+          <button class="tab body-sm-strong is-active" data-tab="connection" type="button">Supprimer une connexion</button>
         </div>
 
         <section class="panel" hidden id="panel-connections">
@@ -521,7 +530,7 @@
               <input class="input body-sm-base" id="connections-org" placeholder="Saisissez l’ID d’organisation" />
               <button class="primary-btn body-sm-strong" type="button">Rechercher</button>
             </div>
-            <p class="body-xs-base hint">Chrome de l’onglet actuel. Le proto cliquable est « Supprimer un compte ».</p>
+            <p class="body-xs-base hint">Chrome de l’onglet actuel. Les flux cliquables sont les deux onglets Supprimer.</p>
           </div>
         </section>
 
@@ -541,7 +550,7 @@
                 </div>
               </div>
             </div>
-            <p class="body-xs-base hint">Chrome de l’onglet actuel. Le proto cliquable est « Supprimer un compte ».</p>
+            <p class="body-xs-base hint">Chrome de l’onglet actuel. Les flux cliquables sont les deux onglets Supprimer.</p>
           </div>
         </section>
 
@@ -550,7 +559,7 @@
           <p class="body-sm-base hint">Aucune vérification IBAN disponible</p>
         </section>
 
-        <section class="panel" id="panel-delete">
+        <section class="panel" hidden id="panel-delete">
           <h2 class="title-sm">Supprimer un compte bancaire</h2>
           <div class="search-card">
             <div class="field">
@@ -573,6 +582,32 @@
             </div>
             <button class="danger-btn body-sm-strong" id="delete-btn" type="button">Supprimer le compte</button>
             <p class="body-xs-base hint" id="delete-hint" hidden>Les deux identifiants sont obligatoires.</p>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-connection">
+          <h2 class="title-sm">Supprimer une connexion bancaire</h2>
+          <div class="search-card">
+            <div class="field">
+              <label class="body-sm-strong" for="conn-org-input">ID d’organisation</label>
+              <input
+                class="input body-sm-base"
+                id="conn-org-input"
+                placeholder="Saisissez l’ID d’organisation"
+                value="0002c486-b682-43bb-b3e8-6c9ff018efcf"
+              />
+            </div>
+            <div class="field">
+              <label class="body-sm-strong" for="conn-id-input">ID de connexion</label>
+              <input
+                class="input body-sm-base"
+                id="conn-id-input"
+                placeholder="Saisissez l’ID de connexion"
+                value="c4e8b912-3a70-4d15-9f26-8b1c0d4e7a55"
+              />
+            </div>
+            <button class="danger-btn body-sm-strong" id="conn-delete-btn" type="button">Supprimer la connexion</button>
+            <p class="body-xs-base hint" id="conn-hint" hidden>Les deux identifiants sont obligatoires.</p>
           </div>
         </section>
       </main>
@@ -605,11 +640,44 @@
       </div>
     </div>
 
+    <div class="overlay" hidden id="conn-modal">
+      <div class="modal" role="dialog" aria-labelledby="conn-modal-title" aria-modal="true">
+        <div class="modal-header">
+          <h2 class="title-sm" id="conn-modal-title">Supprimer la connexion</h2>
+          <button class="ghost-btn body-sm-strong" id="conn-modal-close" type="button">Fermer</button>
+        </div>
+        <div class="modal-body">
+          <p class="body-sm-base">Cette suppression est définitive (hard-delete). Vérifiez les identifiants, puis tapez SUPPRIMER.</p>
+          <div class="id-list">
+            <div class="id-row body-sm-base">
+              <span class="body-sm-strong">Organisation</span>
+              <span class="mono" id="conn-modal-org"></span>
+            </div>
+            <div class="id-row body-sm-base">
+              <span class="body-sm-strong">Connexion</span>
+              <span class="mono" id="conn-modal-id"></span>
+            </div>
+          </div>
+          <div class="alert body-sm-base">La connexion Bridge/Linxo est définitivement supprimée. Cette action n’est pas réversible.</div>
+          <div class="confirm-field">
+            <label class="body-sm-strong" for="conn-confirm-input">Tapez SUPPRIMER</label>
+            <input class="input body-sm-base" id="conn-confirm-input" autocomplete="off" placeholder="SUPPRIMER" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="secondary-btn body-sm-strong" id="conn-modal-cancel" type="button">Annuler</button>
+          <button class="danger-btn body-sm-strong" disabled id="conn-modal-confirm" type="button">Supprimer définitivement</button>
+        </div>
+      </div>
+    </div>
+
     <div class="toasts" id="toasts" aria-live="polite"></div>
 
     <script>
       const SAMPLE_ORG = '0002c486-b682-43bb-b3e8-6c9ff018efcf';
       const SAMPLE_ACCOUNT = '9f3a1c20-7b44-4e91-a2d8-5c6e8f0b1a22';
+      const SAMPLE_CONNECTION = 'c4e8b912-3a70-4d15-9f26-8b1c0d4e7a55';
+      const CONFIRM_WORD = 'SUPPRIMER';
 
       const failToggle = document.getElementById('fail-toggle');
       const orgInput = document.getElementById('org-input');
@@ -621,6 +689,16 @@
       const modalAccount = document.getElementById('modal-account');
       const modalConfirm = document.getElementById('modal-confirm');
       const modalCancel = document.getElementById('modal-cancel');
+      const connOrgInput = document.getElementById('conn-org-input');
+      const connIdInput = document.getElementById('conn-id-input');
+      const connDeleteBtn = document.getElementById('conn-delete-btn');
+      const connHint = document.getElementById('conn-hint');
+      const connModal = document.getElementById('conn-modal');
+      const connModalOrg = document.getElementById('conn-modal-org');
+      const connModalId = document.getElementById('conn-modal-id');
+      const connConfirmInput = document.getElementById('conn-confirm-input');
+      const connModalConfirm = document.getElementById('conn-modal-confirm');
+      const connModalCancel = document.getElementById('conn-modal-cancel');
       const toasts = document.getElementById('toasts');
 
       let pending = false;
@@ -637,50 +715,94 @@
         setTimeout(() => el.remove(), 4200);
       }
 
-      function trimmedIds() {
+      function trimmedAccountIds() {
         return {
           organizationId: orgInput.value.trim(),
           accountId: accountInput.value.trim(),
         };
       }
 
-      function updateDeleteState() {
-        const { organizationId, accountId } = trimmedIds();
+      function trimmedConnectionIds() {
+        return {
+          organizationId: connOrgInput.value.trim(),
+          connectionId: connIdInput.value.trim(),
+        };
+      }
+
+      function updateAccountDeleteState() {
+        const { organizationId, accountId } = trimmedAccountIds();
         const ready = Boolean(organizationId && accountId) && !pending;
         deleteBtn.disabled = !ready;
         deleteHint.hidden = ready || pending;
       }
 
-      function closeModal() {
+      function updateConnectionDeleteState() {
+        const { organizationId, connectionId } = trimmedConnectionIds();
+        const ready = Boolean(organizationId && connectionId) && !pending;
+        connDeleteBtn.disabled = !ready;
+        connHint.hidden = ready || pending;
+      }
+
+      function updateTypedConfirm() {
+        const typed = connConfirmInput.value.trim() === CONFIRM_WORD;
+        connModalConfirm.disabled = pending || !typed;
+      }
+
+      function closeAccountModal() {
         modal.hidden = true;
       }
 
-      function openModal() {
-        const { organizationId, accountId } = trimmedIds();
+      function closeConnectionModal() {
+        connConfirmInput.value = '';
+        connModal.hidden = true;
+        updateTypedConfirm();
+      }
+
+      function openAccountModal() {
+        const { organizationId, accountId } = trimmedAccountIds();
         if (!organizationId || !accountId || pending) return;
+        closeConnectionModal();
         modalOrg.textContent = organizationId;
         modalAccount.textContent = accountId;
         modal.hidden = false;
+      }
+
+      function openConnectionModal() {
+        const { organizationId, connectionId } = trimmedConnectionIds();
+        if (!organizationId || !connectionId || pending) return;
+        closeAccountModal();
+        connModalOrg.textContent = organizationId;
+        connModalId.textContent = connectionId;
+        connConfirmInput.value = '';
+        connModal.hidden = false;
+        updateTypedConfirm();
+        connConfirmInput.focus();
       }
 
       function setBusy(isBusy) {
         pending = isBusy;
         orgInput.disabled = isBusy;
         accountInput.disabled = isBusy;
+        connOrgInput.disabled = isBusy;
+        connIdInput.disabled = isBusy;
+        connConfirmInput.disabled = isBusy;
         modalConfirm.disabled = isBusy;
         modalCancel.disabled = isBusy;
-        updateDeleteState();
+        connModalCancel.disabled = isBusy;
+        updateAccountDeleteState();
+        updateConnectionDeleteState();
+        updateTypedConfirm();
       }
 
-      async function applyDelete() {
-        const { organizationId, accountId } = trimmedIds();
+      async function applyAccountDelete() {
+        const { organizationId, accountId } = trimmedAccountIds();
         if (!organizationId || !accountId) return;
         setBusy(true);
         await wait(700);
 
         if (failToggle.checked) {
           setBusy(false);
-          closeModal();
+          closeAccountModal();
           toast('La suppression du compte a échoué. Réessayez.', 'danger');
           return;
         }
@@ -688,8 +810,29 @@
         orgInput.value = '';
         accountInput.value = '';
         setBusy(false);
-        closeModal();
+        closeAccountModal();
         toast('Le compte bancaire a été supprimé.', 'success');
+      }
+
+      async function applyConnectionDelete() {
+        const { organizationId, connectionId } = trimmedConnectionIds();
+        if (!organizationId || !connectionId) return;
+        if (connConfirmInput.value.trim() !== CONFIRM_WORD) return;
+        setBusy(true);
+        await wait(700);
+
+        if (failToggle.checked) {
+          setBusy(false);
+          closeConnectionModal();
+          toast('La suppression de la connexion a échoué. Réessayez.', 'danger');
+          return;
+        }
+
+        connOrgInput.value = '';
+        connIdInput.value = '';
+        setBusy(false);
+        closeConnectionModal();
+        toast('La connexion bancaire a été définitivement supprimée.', 'success');
       }
 
       function setTab(tab) {
@@ -698,7 +841,7 @@
           button.classList.toggle('body-sm-strong', button.dataset.tab === tab);
           button.classList.toggle('body-sm-base', button.dataset.tab !== tab);
         });
-        ['connections', 'inspect', 'iban', 'delete'].forEach((name) => {
+        ['connections', 'inspect', 'iban', 'delete', 'connection'].forEach((name) => {
           document.getElementById(`panel-${name}`).hidden = name !== tab;
         });
       }
@@ -707,24 +850,39 @@
         button.addEventListener('click', () => setTab(button.dataset.tab));
       });
 
-      orgInput.addEventListener('input', updateDeleteState);
-      accountInput.addEventListener('input', updateDeleteState);
-      deleteBtn.addEventListener('click', openModal);
-      document.getElementById('modal-close').addEventListener('click', closeModal);
-      modalCancel.addEventListener('click', closeModal);
+      orgInput.addEventListener('input', updateAccountDeleteState);
+      accountInput.addEventListener('input', updateAccountDeleteState);
+      deleteBtn.addEventListener('click', openAccountModal);
+      document.getElementById('modal-close').addEventListener('click', closeAccountModal);
+      modalCancel.addEventListener('click', closeAccountModal);
       modalConfirm.addEventListener('click', () => {
-        void applyDelete();
+        void applyAccountDelete();
       });
+
+      connOrgInput.addEventListener('input', updateConnectionDeleteState);
+      connIdInput.addEventListener('input', updateConnectionDeleteState);
+      connDeleteBtn.addEventListener('click', openConnectionModal);
+      connConfirmInput.addEventListener('input', updateTypedConfirm);
+      document.getElementById('conn-modal-close').addEventListener('click', closeConnectionModal);
+      connModalCancel.addEventListener('click', closeConnectionModal);
+      connModalConfirm.addEventListener('click', () => {
+        void applyConnectionDelete();
+      });
+
       document.getElementById('reset-btn').addEventListener('click', () => {
         failToggle.checked = false;
         orgInput.value = SAMPLE_ORG;
         accountInput.value = SAMPLE_ACCOUNT;
-        closeModal();
-        setTab('delete');
+        connOrgInput.value = SAMPLE_ORG;
+        connIdInput.value = SAMPLE_CONNECTION;
+        closeAccountModal();
+        closeConnectionModal();
+        setTab('connection');
         setBusy(false);
       });
 
-      updateDeleteState();
+      updateAccountDeleteState();
+      updateConnectionDeleteState();
     </script>
   </body>
 </html>
